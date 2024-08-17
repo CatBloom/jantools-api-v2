@@ -1,4 +1,5 @@
 scripts/cache
 scripts/tmp
+scripts/docker/dynamodb/
 
 .DS_store
