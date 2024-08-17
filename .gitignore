@@ -1,0 +1,4 @@
+scripts/cache
+scripts/tmp
+
+.DS_store
