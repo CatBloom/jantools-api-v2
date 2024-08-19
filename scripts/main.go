@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"main/controllers"
+	"main/dynamo"
 	"main/models"
 	"main/validator"
 	"net/http"
@@ -24,10 +25,11 @@ var (
 func init() {
 	log.Println("init")
 
+	db := dynamo.NewDynamoDB()
 	// model
-	userModel := models.NewUserModel()
+	leagueModel := models.NewLeagueModel(db)
 	// controller
-	userController := controllers.NewUserController(userModel)
+	leagueController := controllers.NewLeagueController(leagueModel)
 
 	e = echo.New()
 	e.Pre(middleware.RemoveTrailingSlash())
@@ -57,10 +59,9 @@ func init() {
 		return c.JSON(http.StatusOK, "GoRestTemplateAPI")
 	})
 
-	api := e.Group("/api")
-	api.GET("/users", userController.List)
-	api.GET("/user/:id", userController.Get)
-	api.POST("/user", userController.Post)
+	api := e.Group("/api/v2")
+	api.GET("/league/:id", leagueController.Get)
+	api.POST("/league", leagueController.Post)
 
 	echoLambda = echoadapter.New(e)
 }
