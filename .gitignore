@@ -3,3 +3,4 @@ scripts/tmp
 scripts/docker/dynamodb/
 
 .DS_store
+.aws-sam

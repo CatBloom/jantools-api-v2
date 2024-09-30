@@ -37,7 +37,9 @@ func init() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
 	e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
-		log.Printf("ReqBody: %s", string(reqBody))
+		if len(reqBody) != 0 {
+			log.Printf("ReqBody: %s", string(reqBody))
+		}
 	}))
 
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
@@ -56,7 +58,7 @@ func init() {
 	e.Validator = validator.NewValidator()
 
 	e.GET("", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, "GoRestTemplateAPI")
+		return c.JSON(http.StatusOK, "JantoolsAPIv2")
 	})
 
 	api := e.Group("/api/v2")
