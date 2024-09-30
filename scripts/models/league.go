@@ -5,6 +5,7 @@ import (
 	"errors"
 	"main/dynamo"
 	customTypes "main/types"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -36,6 +37,7 @@ func (lm *leagueModel) GetLeagueByID(id string) (customTypes.League, error) {
 		Key: map[string]types.AttributeValue{
 			"id": &types.AttributeValueMemberS{Value: id},
 		},
+		ConsistentRead: aws.Bool(true),
 	}
 
 	result, err := svg.GetItem(context.TODO(), getItemInput)
@@ -62,11 +64,13 @@ func (lm *leagueModel) CreateLeague(req customTypes.League) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	id := uuid.String()
-
+	// uuidからハイフンを除去
+	id := strings.ReplaceAll(uuid.String(), "-", "")
 	req.ID = id
-	req.CreatedAt = time.Now()
+
+	// 作成日をjstで作成
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	req.CreatedAt = time.Now().In(jst)
 
 	item, err := attributevalue.MarshalMap(req)
 	if err != nil {
