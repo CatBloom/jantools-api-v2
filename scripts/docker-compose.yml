@@ -26,9 +26,8 @@ services:
       target: local
     ports:
       - 8080:8080
-    working_dir: /go/src/work
     volumes:
-      - .:/go/src/work
+      - .:/app
       - ~/.aws:/root/.aws:ro
     tty: true
     environment: 
