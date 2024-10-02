@@ -5,6 +5,7 @@ import (
 	"errors"
 	"main/dynamo"
 	customTypes "main/types"
+	"os"
 	"strings"
 	"time"
 
@@ -32,8 +33,9 @@ func (lm *leagueModel) GetLeagueByID(id string) (customTypes.League, error) {
 	res := customTypes.League{}
 	svg := lm.db.GetClient()
 
+	tableName := os.Getenv("ENV") + "_league"
 	getItemInput := &dynamodb.GetItemInput{
-		TableName: aws.String("league"),
+		TableName: aws.String(tableName),
 		Key: map[string]types.AttributeValue{
 			"id": &types.AttributeValueMemberS{Value: id},
 		},
@@ -77,8 +79,9 @@ func (lm *leagueModel) CreateLeague(req customTypes.League) (string, error) {
 		return "", err
 	}
 
+	tableName := os.Getenv("ENV") + "_league"
 	putItemInput := &dynamodb.PutItemInput{
-		TableName: aws.String("league"),
+		TableName: aws.String(tableName),
 		Item:      item,
 	}
 
