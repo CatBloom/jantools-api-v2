@@ -1,36 +1,34 @@
-FROM golang:1.22.4 AS Prod
+FROM golang:1.23.1 AS prod
 
-WORKDIR /go/src/work
+WORKDIR /app
 COPY go.mod go.sum ./
 
-RUN mkdir -p /go/src/work/cache
-
+RUN mkdir -p /app/cache
 ENV CGO_ENABLED=0 \
   GOOS=linux \
   GOARCH=amd64 \
-  GOCACHE=/go/src/work/cache
-EXPOSE 8080
+  GOCACHE=/app/cache
 
 RUN go mod tidy
-
 COPY . ./
 
+EXPOSE 8080
 RUN go fmt && go build -o app .
-CMD ["go", "run", "./go/src/work/main.go"]
 
-FROM golang:1.22.2 AS local
+CMD ["go", "run", "/app/main.go"]
 
-WORKDIR /go/src/work
+FROM golang:1.23.1 AS local
 
-RUN go mod init
+WORKDIR /app
+RUN go mod init jantoolsAPIv2
 COPY go.mod go.sum ./
 
-EXPOSE 8080
-
 RUN go mod tidy
 COPY . ./
 
+EXPOSE 8080
 RUN go install github.com/rakyll/gotest@latest
 RUN go install github.com/air-verse/air@latest
 RUN go fmt && go build -o app .
+
 CMD ["air", "-c", ".air.toml"]

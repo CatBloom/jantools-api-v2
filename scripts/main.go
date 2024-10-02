@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"main/controllers"
+	"main/dynamo"
 	"main/models"
 	"main/validator"
 	"net/http"
@@ -24,10 +25,11 @@ var (
 func init() {
 	log.Println("init")
 
+	db := dynamo.NewDynamoDB()
 	// model
-	userModel := models.NewUserModel()
+	leagueModel := models.NewLeagueModel(db)
 	// controller
-	userController := controllers.NewUserController(userModel)
+	leagueController := controllers.NewLeagueController(leagueModel)
 
 	e = echo.New()
 	e.Pre(middleware.RemoveTrailingSlash())
@@ -35,7 +37,9 @@ func init() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
 	e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
-		log.Printf("ReqBody: %s", string(reqBody))
+		if len(reqBody) != 0 {
+			log.Printf("ReqBody: %s", string(reqBody))
+		}
 	}))
 
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
@@ -54,13 +58,12 @@ func init() {
 	e.Validator = validator.NewValidator()
 
 	e.GET("", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, "GoRestTemplateAPI")
+		return c.JSON(http.StatusOK, "JantoolsAPIv2")
 	})
 
-	api := e.Group("/api")
-	api.GET("/users", userController.List)
-	api.GET("/user/:id", userController.Get)
-	api.POST("/user", userController.Post)
+	api := e.Group("/api/v2")
+	api.GET("/league/:id", leagueController.Get)
+	api.POST("/league", leagueController.Post)
 
 	echoLambda = echoadapter.New(e)
 }
