@@ -17,6 +17,7 @@ import (
 )
 
 type GameModel interface {
+	GetGameList(req types.ReqGameList) ([]types.Game, error)
 	GetGame(types.ReqGame) (types.Game, error)
 	CreateGame(types.Game) (string, error)
 }
@@ -27,6 +28,37 @@ type gameModel struct {
 
 func NewGameModel(db dynamo.DynamoDB) GameModel {
 	return &gameModel{db}
+}
+
+func (gm *gameModel) GetGameList(req types.ReqGameList) ([]types.Game, error) {
+	res := []types.Game{}
+	svg := gm.db.GetClient()
+
+	tableName := os.Getenv("ENV") + "_game"
+	queryInput := &dynamodb.QueryInput{
+		TableName:              aws.String(tableName),
+		KeyConditionExpression: aws.String("league_id = :leagueID"),
+		ExpressionAttributeValues: map[string]dynamoTypes.AttributeValue{
+			":leagueID": &dynamoTypes.AttributeValueMemberS{Value: req.LeagueID},
+		},
+		ConsistentRead: aws.Bool(true),
+	}
+
+	result, err := svg.Query(context.TODO(), queryInput)
+	if err != nil {
+		return res, err
+	}
+
+	if result.Items == nil {
+		return res, errors.New("dynamodb item not found")
+	}
+
+	err = attributevalue.UnmarshalListOfMaps(result.Items, &res)
+	if err != nil {
+		return res, err
+	}
+
+	return res, err
 }
 
 func (gm *gameModel) GetGame(req types.ReqGame) (types.Game, error) {

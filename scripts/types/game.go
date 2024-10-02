@@ -2,9 +2,13 @@ package types
 
 import "time"
 
+type ReqGameList struct {
+	LeagueID string `query:"leagueID" validate:"required"`
+}
+
 type ReqGame struct {
 	ID       string `query:"id" validate:"required"`
-	LeagueID string `query:"league_id" validate:"required"`
+	LeagueID string `query:"leagueID" validate:"required"`
 }
 
 type Game struct {
