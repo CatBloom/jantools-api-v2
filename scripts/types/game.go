@@ -13,13 +13,14 @@ type ReqGame struct {
 
 type Game struct {
 	ID        string    `json:"id" dynamodbav:"id"`
-	League_ID string    `json:"leagueID" dynamodbav:"league_id"`
+	League_ID string    `json:"leagueID"  validate:"required" dynamodbav:"league_id"`
 	CreatedAt time.Time `json:"createdAt" dynamodbav:"created_at"`
-	Results   []Result  `json:"results" dynamodbav:"results"`
+	Results   []Result  `json:"results" validate:"dive,required" dynamodbav:"results" `
 }
 
 type Result struct {
-	Rank  int    `json:"rank" dynamodbav:"rank"`
-	Name  string `json:"name" dynamodbav:"name"`
-	Point int    `json:"point" dynamodbav:"point"`
+	Rank      int    `json:"rank" validate:"required" dynamodbav:"rank"`
+	Name      string `json:"name" validate:"required" dynamodbav:"name"`
+	Point     int    `json:"point" validate:"required" dynamodbav:"point"`
+	CalcPoint int    `json:"calcPoint" validate:"required" dynamodbav:"calcPoint"`
 }
