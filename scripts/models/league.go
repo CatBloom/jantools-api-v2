@@ -4,21 +4,21 @@ import (
 	"context"
 	"errors"
 	"main/dynamo"
-	customTypes "main/types"
+	"main/types"
+	"main/utils"
 	"os"
-	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/google/uuid"
+	dynamoTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
 type LeagueModel interface {
-	GetLeagueByID(string) (customTypes.League, error)
-	CreateLeague(customTypes.League) (string, error)
+	GetLeague(types.ReqGetDeleteLeague) (types.League, error)
+	CreateLeague(types.ReqPostLeague) (string, error)
+	UpdateLeague(req types.ReqPutLeague) (types.League, error)
+	DeleteLeague(req types.ReqGetDeleteLeague) (string, error)
 }
 
 type leagueModel struct {
@@ -29,15 +29,15 @@ func NewLeagueModel(db dynamo.DynamoDB) LeagueModel {
 	return &leagueModel{db}
 }
 
-func (lm *leagueModel) GetLeagueByID(id string) (customTypes.League, error) {
-	res := customTypes.League{}
+func (lm *leagueModel) GetLeague(req types.ReqGetDeleteLeague) (types.League, error) {
+	res := types.League{}
 	svg := lm.db.GetClient()
 
 	tableName := os.Getenv("ENV") + "_league"
 	getItemInput := &dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
-		Key: map[string]types.AttributeValue{
-			"id": &types.AttributeValueMemberS{Value: id},
+		Key: map[string]dynamoTypes.AttributeValue{
+			"id": &dynamoTypes.AttributeValueMemberS{Value: req.ID},
 		},
 		ConsistentRead: aws.Bool(true),
 	}
@@ -59,25 +59,26 @@ func (lm *leagueModel) GetLeagueByID(id string) (customTypes.League, error) {
 	return res, err
 }
 
-func (lm *leagueModel) CreateLeague(req customTypes.League) (string, error) {
+func (lm *leagueModel) CreateLeague(req types.ReqPostLeague) (string, error) {
 	svg := lm.db.GetClient()
-
-	uuid, err := uuid.NewRandom()
-	if err != nil {
-		return "", err
-	}
-	// uuidからハイフンを除去
-	id := strings.ReplaceAll(uuid.String(), "-", "")
-	req.ID = id
-
-	// 作成日をjstで作成
-	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-	req.CreatedAt = time.Now().In(jst)
 
 	item, err := attributevalue.MarshalMap(req)
 	if err != nil {
 		return "", err
 	}
+
+	id, err := utils.GenerateUUIDWithoutHyphens()
+	if err != nil {
+		return "", err
+	}
+	// // 作成日、更新日をjstで作成
+	now, err := attributevalue.Marshal(utils.NowJST())
+	if err != nil {
+		return "", err
+	}
+	item["id"] = &dynamoTypes.AttributeValueMemberS{Value: id}
+	item["created_at"] = now
+	item["updated_at"] = now
 
 	tableName := os.Getenv("ENV") + "_league"
 	putItemInput := &dynamodb.PutItemInput{
@@ -91,4 +92,66 @@ func (lm *leagueModel) CreateLeague(req customTypes.League) (string, error) {
 	}
 
 	return id, err
+}
+
+func (lm *leagueModel) UpdateLeague(req types.ReqPutLeague) (types.League, error) {
+	res := types.League{}
+	svg := lm.db.GetClient()
+
+	// 更新日をjstで作成
+	updatedAt, err := attributevalue.Marshal(utils.NowJST())
+	if err != nil {
+		return res, err
+	}
+
+	tableName := os.Getenv("ENV") + "_league"
+	updateInput := &dynamodb.UpdateItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]dynamoTypes.AttributeValue{
+			"id": &dynamoTypes.AttributeValueMemberS{Value: req.ID},
+		},
+		ExpressionAttributeNames: map[string]string{
+			"#updated_at": "updated_at",
+			"#name":       "name",
+			"#manual":     "manual",
+		},
+		ExpressionAttributeValues: map[string]dynamoTypes.AttributeValue{
+			":updated_at": updatedAt,
+			":name":       &dynamoTypes.AttributeValueMemberS{Value: req.Name},
+			":manual":     &dynamoTypes.AttributeValueMemberS{Value: *req.Manual},
+		},
+		UpdateExpression: aws.String("SET #updated_at = :updated_at,#name = :name,#manual = :manual"),
+		ReturnValues:     dynamoTypes.ReturnValueAllNew,
+	}
+
+	result, err := svg.UpdateItem(context.TODO(), updateInput)
+	if err != nil {
+		return res, err
+	}
+
+	err = attributevalue.UnmarshalMap(result.Attributes, &res)
+	if err != nil {
+		return res, err
+	}
+
+	return res, err
+}
+
+func (lm *leagueModel) DeleteLeague(req types.ReqGetDeleteLeague) (string, error) {
+	svg := lm.db.GetClient()
+
+	tableName := os.Getenv("ENV") + "_league"
+	deleteInput := &dynamodb.DeleteItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]dynamoTypes.AttributeValue{
+			"id": &dynamoTypes.AttributeValueMemberS{Value: req.ID},
+		},
+	}
+
+	_, err := svg.DeleteItem(context.TODO(), deleteInput)
+	if err != nil {
+		return "", err
+	}
+
+	return req.ID, err
 }
