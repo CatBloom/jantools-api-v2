@@ -23,9 +23,19 @@ func NewLeagueController(m models.LeagueModel) LeagueController {
 }
 
 func (lc *leagueController) Get(c echo.Context) error {
-	id := c.Param("id")
+	req := types.ReqGetLeague{}
 
-	res, err := lc.m.GetLeagueByID(id)
+	if err := c.Bind(&req); err != nil {
+		log.Printf("error:%s", err.Error())
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	if err := c.Validate(req); err != nil {
+		log.Printf("error:%s", err.Error())
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	res, err := lc.m.GetLeague(req)
 	if err != nil {
 		log.Printf("error:%s", err.Error())
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -35,7 +45,7 @@ func (lc *leagueController) Get(c echo.Context) error {
 }
 
 func (lc *leagueController) Post(c echo.Context) error {
-	req := types.League{}
+	req := types.ReqPostLeague{}
 
 	if err := c.Bind(&req); err != nil {
 		log.Printf("error:%s", err.Error())

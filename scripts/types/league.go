@@ -4,14 +4,22 @@ import (
 	"time"
 )
 
+type ReqGetLeague struct {
+	ID string `query:"id" validate:"required"`
+}
+
+type ReqPostLeague struct {
+	Name   string `json:"name" validate:"required" dynamodbav:"name"`
+	Manual string `json:"manual" dynamodbav:"manual"`
+	Rule   Rule   `json:"rule" dynamodbav:"rule"`
+}
+
 type League struct {
 	ID        string    `json:"id" dynamodbav:"id"`
 	CreatedAt time.Time `json:"createdAt" dynamodbav:"created_at"`
-	Name      string    `json:"name" validate:"required" dynamodbav:"name"`
+	Name      string    `json:"name" dynamodbav:"name"`
 	Manual    string    `json:"manual" dynamodbav:"manual"`
-	// StartAt   string    `json:"startAt" dynamodbav:"start_at"`
-	// FinishAt  string    `json:"finishAt" dynamodbav:"finish_at"`
-	Rule Rule `json:"rule" dynamodbav:"rule"`
+	Rule      Rule      `json:"rule" dynamodbav:"rule"`
 }
 
 type Rule struct {
