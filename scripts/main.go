@@ -30,7 +30,7 @@ func init() {
 	leagueModel := models.NewLeagueModel(db)
 	gameModel := models.NewGameModel(db)
 	// controller
-	leagueController := controllers.NewLeagueController(leagueModel)
+	leagueController := controllers.NewLeagueController(leagueModel, gameModel)
 	gameController := controllers.NewGameController(gameModel)
 
 	e = echo.New()
@@ -69,6 +69,8 @@ func init() {
 	{
 		league.GET("", leagueController.Get)
 		league.POST("", leagueController.Post)
+		league.PUT("", leagueController.Put)
+		league.DELETE("", leagueController.Delete)
 	}
 
 	game := api.Group("/game")
