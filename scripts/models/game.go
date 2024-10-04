@@ -7,13 +7,11 @@ import (
 	"main/types"
 	"main/utils"
 	"os"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamoTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/google/uuid"
 )
 
 type GameModel interface {
@@ -102,12 +100,10 @@ func (gm *gameModel) CreateGame(req types.ReqPostGame) (string, error) {
 		return "", err
 	}
 
-	uuid, err := uuid.NewRandom()
+	id, err := utils.GenerateUUIDWithoutHyphens()
 	if err != nil {
 		return "", err
 	}
-	// uuidからハイフンを除去
-	id := strings.ReplaceAll(uuid.String(), "-", "")
 
 	// // 作成日、更新日をjstで作成
 	now, err := attributevalue.Marshal(utils.NowJST())
