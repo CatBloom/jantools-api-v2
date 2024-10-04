@@ -20,6 +20,8 @@ type GameModel interface {
 	GetGameList(req types.ReqGameList) ([]types.Game, error)
 	GetGame(types.ReqGame) (types.Game, error)
 	CreateGame(types.Game) (string, error)
+	UpdateGame(req types.Game) (types.Game, error)
+	DeleteGame(req types.ReqGame) (string, error)
 }
 
 type gameModel struct {
@@ -103,8 +105,10 @@ func (gm *gameModel) CreateGame(req types.Game) (string, error) {
 	id := strings.ReplaceAll(uuid.String(), "-", "")
 	req.ID = id
 
-	// 作成日をjstで作成
-	req.CreatedAt = utils.NowJST()
+	// 作成日、更新日をjstで作成
+	now := utils.NowJST()
+	req.CreatedAt = now
+	req.UpdatedAt = now
 
 	item, err := attributevalue.MarshalMap(req)
 	if err != nil {
@@ -123,4 +127,72 @@ func (gm *gameModel) CreateGame(req types.Game) (string, error) {
 	}
 
 	return id, err
+}
+
+func (gm *gameModel) UpdateGame(req types.Game) (types.Game, error) {
+	res := types.Game{}
+	svg := gm.db.GetClient()
+
+	// 更新日をjstで作成
+	req.UpdatedAt = utils.NowJST()
+	updatedAt, err := attributevalue.Marshal(req.UpdatedAt)
+	if err != nil {
+		return res, err
+	}
+
+	resultList, err := attributevalue.MarshalList(req.Results)
+	if err != nil {
+		return res, err
+	}
+
+	tableName := os.Getenv("ENV") + "_game"
+	updateInput := &dynamodb.UpdateItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]dynamoTypes.AttributeValue{
+			"id":        &dynamoTypes.AttributeValueMemberS{Value: req.ID},
+			"league_id": &dynamoTypes.AttributeValueMemberS{Value: req.LeagueID},
+		},
+		ExpressionAttributeNames: map[string]string{
+			"#results":    "results",
+			"#updated_at": "updated_at",
+		},
+		ExpressionAttributeValues: map[string]dynamoTypes.AttributeValue{
+			":results":    &dynamoTypes.AttributeValueMemberL{Value: resultList},
+			":updated_at": updatedAt,
+		},
+		UpdateExpression: aws.String("SET #results = :results,#updated_at = :updated_at"),
+		ReturnValues:     dynamoTypes.ReturnValueAllNew,
+	}
+
+	result, err := svg.UpdateItem(context.TODO(), updateInput)
+	if err != nil {
+		return res, err
+	}
+
+	err = attributevalue.UnmarshalMap(result.Attributes, &res)
+	if err != nil {
+		return res, err
+	}
+
+	return res, err
+}
+
+func (gm *gameModel) DeleteGame(req types.ReqGame) (string, error) {
+	svg := gm.db.GetClient()
+
+	tableName := os.Getenv("ENV") + "_game"
+	deleteInput := &dynamodb.DeleteItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]dynamoTypes.AttributeValue{
+			"id":        &dynamoTypes.AttributeValueMemberS{Value: req.ID},
+			"league_id": &dynamoTypes.AttributeValueMemberS{Value: req.LeagueID},
+		},
+	}
+
+	_, err := svg.DeleteItem(context.TODO(), deleteInput)
+	if err != nil {
+		return "", err
+	}
+
+	return req.ID, err
 }

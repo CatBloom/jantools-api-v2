@@ -13,8 +13,9 @@ type ReqGame struct {
 
 type Game struct {
 	ID        string    `json:"id" dynamodbav:"id"`
-	League_ID string    `json:"leagueID"  validate:"required" dynamodbav:"league_id"`
+	LeagueID  string    `json:"leagueID"  validate:"required" dynamodbav:"league_id"`
 	CreatedAt time.Time `json:"createdAt" dynamodbav:"created_at"`
+	UpdatedAt time.Time `json:"updatedAt" dynamodbav:"updated_at"`
 	Results   []Result  `json:"results" validate:"dive,required" dynamodbav:"results" `
 }
 
