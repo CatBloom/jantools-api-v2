@@ -2,21 +2,32 @@ package types
 
 import "time"
 
-type ReqGameList struct {
+type ReqGetGameList struct {
 	LeagueID string `query:"leagueID" validate:"required"`
 }
 
-type ReqGame struct {
+type ReqGetDeleteGame struct {
 	ID       string `query:"id" validate:"required"`
 	LeagueID string `query:"leagueID" validate:"required"`
 }
 
+type ReqPostGame struct {
+	LeagueID string   `json:"leagueID" validate:"required" dynamodbav:"league_id"`
+	Results  []Result `json:"results" validate:"dive,required" dynamodbav:"results" `
+}
+
+type ReqPutGame struct {
+	ID       string   `json:"id" validate:"required" dynamodbav:"id"`
+	LeagueID string   `json:"leagueID" validate:"required" dynamodbav:"league_id"`
+	Results  []Result `json:"results" validate:"dive,required" dynamodbav:"results" `
+}
+
 type Game struct {
 	ID        string    `json:"id" dynamodbav:"id"`
-	LeagueID  string    `json:"leagueID"  validate:"required" dynamodbav:"league_id"`
+	LeagueID  string    `json:"leagueID" dynamodbav:"league_id"`
 	CreatedAt time.Time `json:"createdAt" dynamodbav:"created_at"`
 	UpdatedAt time.Time `json:"updatedAt" dynamodbav:"updated_at"`
-	Results   []Result  `json:"results" validate:"dive,required" dynamodbav:"results" `
+	Results   []Result  `json:"results"  dynamodbav:"results" `
 }
 
 type Result struct {

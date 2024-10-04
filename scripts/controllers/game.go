@@ -26,7 +26,7 @@ func NewGameController(m models.GameModel) GameController {
 }
 
 func (gc *gameController) List(c echo.Context) error {
-	req := types.ReqGameList{}
+	req := types.ReqGetGameList{}
 
 	if err := c.Bind(&req); err != nil {
 		log.Printf("error:%s", err.Error())
@@ -48,7 +48,7 @@ func (gc *gameController) List(c echo.Context) error {
 }
 
 func (gc *gameController) Get(c echo.Context) error {
-	req := types.ReqGame{}
+	req := types.ReqGetDeleteGame{}
 
 	if err := c.Bind(&req); err != nil {
 		log.Printf("error:%s", err.Error())
@@ -70,7 +70,7 @@ func (gc *gameController) Get(c echo.Context) error {
 }
 
 func (gc *gameController) Post(c echo.Context) error {
-	req := types.Game{}
+	req := types.ReqPostGame{}
 
 	if err := c.Bind(&req); err != nil {
 		log.Printf("error:%s", err.Error())
@@ -96,7 +96,7 @@ func (gc *gameController) Post(c echo.Context) error {
 }
 
 func (gc *gameController) Put(c echo.Context) error {
-	req := types.Game{}
+	req := types.ReqPutGame{}
 
 	if err := c.Bind(&req); err != nil {
 		log.Printf("error:%s", err.Error())
@@ -118,7 +118,7 @@ func (gc *gameController) Put(c echo.Context) error {
 }
 
 func (gc *gameController) Delete(c echo.Context) error {
-	req := types.ReqGame{}
+	req := types.ReqGetDeleteGame{}
 
 	if err := c.Bind(&req); err != nil {
 		log.Printf("error:%s", err.Error())

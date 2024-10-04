@@ -17,11 +17,11 @@ import (
 )
 
 type GameModel interface {
-	GetGameList(req types.ReqGameList) ([]types.Game, error)
-	GetGame(types.ReqGame) (types.Game, error)
-	CreateGame(types.Game) (string, error)
-	UpdateGame(req types.Game) (types.Game, error)
-	DeleteGame(req types.ReqGame) (string, error)
+	GetGameList(req types.ReqGetGameList) ([]types.Game, error)
+	GetGame(types.ReqGetDeleteGame) (types.Game, error)
+	CreateGame(types.ReqPostGame) (string, error)
+	UpdateGame(req types.ReqPutGame) (types.Game, error)
+	DeleteGame(req types.ReqGetDeleteGame) (string, error)
 }
 
 type gameModel struct {
@@ -32,7 +32,7 @@ func NewGameModel(db dynamo.DynamoDB) GameModel {
 	return &gameModel{db}
 }
 
-func (gm *gameModel) GetGameList(req types.ReqGameList) ([]types.Game, error) {
+func (gm *gameModel) GetGameList(req types.ReqGetGameList) ([]types.Game, error) {
 	res := []types.Game{}
 	svg := gm.db.GetClient()
 
@@ -63,7 +63,7 @@ func (gm *gameModel) GetGameList(req types.ReqGameList) ([]types.Game, error) {
 	return res, err
 }
 
-func (gm *gameModel) GetGame(req types.ReqGame) (types.Game, error) {
+func (gm *gameModel) GetGame(req types.ReqGetDeleteGame) (types.Game, error) {
 	res := types.Game{}
 	svg := gm.db.GetClient()
 
@@ -94,8 +94,13 @@ func (gm *gameModel) GetGame(req types.ReqGame) (types.Game, error) {
 	return res, err
 }
 
-func (gm *gameModel) CreateGame(req types.Game) (string, error) {
+func (gm *gameModel) CreateGame(req types.ReqPostGame) (string, error) {
 	svg := gm.db.GetClient()
+
+	item, err := attributevalue.MarshalMap(req)
+	if err != nil {
+		return "", err
+	}
 
 	uuid, err := uuid.NewRandom()
 	if err != nil {
@@ -103,17 +108,15 @@ func (gm *gameModel) CreateGame(req types.Game) (string, error) {
 	}
 	// uuidからハイフンを除去
 	id := strings.ReplaceAll(uuid.String(), "-", "")
-	req.ID = id
 
-	// 作成日、更新日をjstで作成
-	now := utils.NowJST()
-	req.CreatedAt = now
-	req.UpdatedAt = now
-
-	item, err := attributevalue.MarshalMap(req)
+	// // 作成日、更新日をjstで作成
+	now, err := attributevalue.Marshal(utils.NowJST())
 	if err != nil {
 		return "", err
 	}
+	item["id"] = &dynamoTypes.AttributeValueMemberS{Value: id}
+	item["created_at"] = now
+	item["updated_at"] = now
 
 	tableName := os.Getenv("ENV") + "_game"
 	putItemInput := &dynamodb.PutItemInput{
@@ -129,13 +132,12 @@ func (gm *gameModel) CreateGame(req types.Game) (string, error) {
 	return id, err
 }
 
-func (gm *gameModel) UpdateGame(req types.Game) (types.Game, error) {
+func (gm *gameModel) UpdateGame(req types.ReqPutGame) (types.Game, error) {
 	res := types.Game{}
 	svg := gm.db.GetClient()
 
 	// 更新日をjstで作成
-	req.UpdatedAt = utils.NowJST()
-	updatedAt, err := attributevalue.Marshal(req.UpdatedAt)
+	updatedAt, err := attributevalue.Marshal(utils.NowJST())
 	if err != nil {
 		return res, err
 	}
@@ -177,7 +179,7 @@ func (gm *gameModel) UpdateGame(req types.Game) (types.Game, error) {
 	return res, err
 }
 
-func (gm *gameModel) DeleteGame(req types.ReqGame) (string, error) {
+func (gm *gameModel) DeleteGame(req types.ReqGetDeleteGame) (string, error) {
 	svg := gm.db.GetClient()
 
 	tableName := os.Getenv("ENV") + "_game"
