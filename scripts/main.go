@@ -28,8 +28,10 @@ func init() {
 	db := dynamo.NewDynamoDB()
 	// model
 	leagueModel := models.NewLeagueModel(db)
+	gameModel := models.NewGameModel(db)
 	// controller
 	leagueController := controllers.NewLeagueController(leagueModel)
+	gameController := controllers.NewGameController(gameModel)
 
 	e = echo.New()
 	e.Pre(middleware.RemoveTrailingSlash())
@@ -62,8 +64,21 @@ func init() {
 	})
 
 	api := e.Group("/api/v2")
-	api.GET("/league/:id", leagueController.Get)
-	api.POST("/league", leagueController.Post)
+
+	league := api.Group("/league")
+	{
+		league.GET("", leagueController.Get)
+		league.POST("", leagueController.Post)
+	}
+
+	game := api.Group("/game")
+	{
+		game.GET("/list", gameController.List)
+		game.GET("", gameController.Get)
+		game.POST("", gameController.Post)
+		game.PUT("", gameController.Put)
+		game.DELETE("", gameController.Delete)
+	}
 
 	echoLambda = echoadapter.New(e)
 }
