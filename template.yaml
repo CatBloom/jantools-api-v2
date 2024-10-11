@@ -60,3 +60,20 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
+  GameTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${ENV}_game' 
+      AttributeDefinitions:
+        - AttributeName: league_id
+          AttributeType: S
+        - AttributeName: id  
+          AttributeType: S        
+      KeySchema:
+        - AttributeName: league_id
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1

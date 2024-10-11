@@ -66,8 +66,14 @@ func (lc *leagueController) Post(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	res := map[string]string{
-		"id": id,
+	leagueReq := types.ReqGetDeleteLeague{
+		ID: id,
+	}
+
+	res, err := lc.m.GetLeague(leagueReq)
+	if err != nil {
+		log.Printf("error:%s", err.Error())
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	return c.JSON(http.StatusOK, res)
