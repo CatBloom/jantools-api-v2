@@ -88,8 +88,15 @@ func (gc *gameController) Post(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	res := map[string]string{
-		"id": id,
+	gameReq := types.ReqGetDeleteGame{
+		ID:       id,
+		LeagueID: req.LeagueID,
+	}
+
+	res, err := gc.m.GetGame(gameReq)
+	if err != nil {
+		log.Printf("error:%s", err.Error())
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	return c.JSON(http.StatusOK, res)

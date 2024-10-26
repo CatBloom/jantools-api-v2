@@ -31,8 +31,8 @@ type Game struct {
 }
 
 type Result struct {
-	Rank      int    `json:"rank" validate:"required" dynamodbav:"rank"`
-	Name      string `json:"name" validate:"required" dynamodbav:"name"`
-	Point     int    `json:"point" validate:"required" dynamodbav:"point"`
-	CalcPoint int    `json:"calcPoint" validate:"required" dynamodbav:"calcPoint"`
+	Rank      int      `json:"rank" validate:"required" dynamodbav:"rank"`
+	Name      string   `json:"name" validate:"required" dynamodbav:"name"`
+	Point     *int     `json:"point" validate:"required" dynamodbav:"point"`
+	CalcPoint *float64 `json:"calcPoint" validate:"required" dynamodbav:"calcPoint"`
 }
