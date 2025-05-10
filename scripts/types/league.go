@@ -4,20 +4,25 @@ import (
 	"time"
 )
 
-type ReqGetDeleteLeague struct {
+type ReqGetLeague struct {
 	ID string `query:"id" validate:"required"`
 }
 
 type ReqPostLeague struct {
-	Name   string `json:"name" validate:"required" dynamodbav:"name"`
-	Manual string `json:"manual" dynamodbav:"manual"`
-	Rule   Rule   `json:"rule" dynamodbav:"rule"`
+	Name     string `json:"name" validate:"required" dynamodbav:"name"`
+	Manual   string `json:"manual" dynamodbav:"manual"`
+	Password string `json:"password" dynamodbav:"password"`
+	Rule     Rule   `json:"rule" dynamodbav:"rule"`
 }
 
 type ReqPutLeague struct {
-	ID     string  `json:"id" validate:"required" dynamodbav:"id" `
+	ID     string  `json:"id" dynamodbav:"id" `
 	Name   string  `json:"name" validate:"required" dynamodbav:"name"`
 	Manual *string `json:"manual" validate:"required" dynamodbav:"manual"`
+}
+
+type ReqDeleteLeague struct {
+	ID string `query:"id"`
 }
 
 type League struct {
@@ -26,6 +31,7 @@ type League struct {
 	UpdatedAt time.Time `json:"updatedAt" dynamodbav:"updated_at"`
 	Name      string    `json:"name" dynamodbav:"name"`
 	Manual    string    `json:"manual" dynamodbav:"manual"`
+	Password  string    `json:"password" dynamodbav:"password"`
 	Rule      Rule      `json:"rule" dynamodbav:"rule"`
 }
 

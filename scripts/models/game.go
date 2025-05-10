@@ -16,10 +16,10 @@ import (
 
 type GameModel interface {
 	GetGameList(req types.ReqGetGameList) ([]types.Game, error)
-	GetGame(types.ReqGetDeleteGame) (types.Game, error)
+	GetGame(types.ReqGetGame) (types.Game, error)
 	CreateGame(types.ReqPostGame) (string, error)
 	UpdateGame(req types.ReqPutGame) (types.Game, error)
-	DeleteGame(req types.ReqGetDeleteGame) (string, error)
+	DeleteGame(req types.ReqDeleteGame) (string, error)
 }
 
 type gameModel struct {
@@ -61,7 +61,7 @@ func (gm *gameModel) GetGameList(req types.ReqGetGameList) ([]types.Game, error)
 	return res, err
 }
 
-func (gm *gameModel) GetGame(req types.ReqGetDeleteGame) (types.Game, error) {
+func (gm *gameModel) GetGame(req types.ReqGetGame) (types.Game, error) {
 	res := types.Game{}
 	svg := gm.db.GetClient()
 
@@ -175,7 +175,7 @@ func (gm *gameModel) UpdateGame(req types.ReqPutGame) (types.Game, error) {
 	return res, err
 }
 
-func (gm *gameModel) DeleteGame(req types.ReqGetDeleteGame) (string, error) {
+func (gm *gameModel) DeleteGame(req types.ReqDeleteGame) (string, error) {
 	svg := gm.db.GetClient()
 
 	tableName := os.Getenv("ENV") + "_game"
@@ -185,6 +185,7 @@ func (gm *gameModel) DeleteGame(req types.ReqGetDeleteGame) (string, error) {
 			"id":        &dynamoTypes.AttributeValueMemberS{Value: req.ID},
 			"league_id": &dynamoTypes.AttributeValueMemberS{Value: req.LeagueID},
 		},
+		ConditionExpression: aws.String("attribute_exists(id) AND attribute_exists(league_id)"),
 	}
 
 	_, err := svg.DeleteItem(context.TODO(), deleteInput)
