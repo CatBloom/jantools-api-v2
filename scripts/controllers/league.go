@@ -4,6 +4,7 @@ import (
 	"log"
 	"main/models"
 	"main/types"
+	"main/utils"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -26,7 +27,7 @@ func NewLeagueController(m models.LeagueModel, g models.GameModel) LeagueControl
 }
 
 func (lc *leagueController) Get(c echo.Context) error {
-	req := types.ReqGetDeleteLeague{}
+	req := types.ReqGetLeague{}
 
 	if err := c.Bind(&req); err != nil {
 		log.Printf("error:%s", err.Error())
@@ -44,6 +45,9 @@ func (lc *leagueController) Get(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
+	// パスワードは返却しないため、削除
+	res.Password = ""
+
 	return c.JSON(http.StatusOK, res)
 }
 
@@ -60,17 +64,21 @@ func (lc *leagueController) Post(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
+	// passwordのハッシュ化
+	hashPass, err := utils.GenerateHashPassword(req.Password)
+	if err != nil {
+		log.Printf("error:%s", err.Error())
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	req.Password = hashPass
+
 	id, err := lc.m.CreateLeague(req)
 	if err != nil {
 		log.Printf("error:%s", err.Error())
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	leagueReq := types.ReqGetDeleteLeague{
-		ID: id,
-	}
-
-	res, err := lc.m.GetLeague(leagueReq)
+	res, err := lc.m.GetLeague(types.ReqGetLeague{ID: id})
 	if err != nil {
 		log.Printf("error:%s", err.Error())
 		return c.JSON(http.StatusBadRequest, err.Error())
@@ -92,6 +100,13 @@ func (lc *leagueController) Put(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
+	// 認証情報を確認
+	if leagueID, ok := c.Get("leagueID").(string); ok {
+		req.ID = leagueID
+	} else {
+		return c.JSON(http.StatusBadRequest, "Invalid token")
+	}
+
 	res, err := lc.m.UpdateLeague(req)
 	if err != nil {
 		log.Printf("error:%s", err.Error())
@@ -102,7 +117,7 @@ func (lc *leagueController) Put(c echo.Context) error {
 }
 
 func (lc *leagueController) Delete(c echo.Context) error {
-	req := types.ReqGetDeleteLeague{}
+	req := types.ReqDeleteLeague{}
 
 	if err := c.Bind(&req); err != nil {
 		log.Printf("error:%s", err.Error())
@@ -112,6 +127,13 @@ func (lc *leagueController) Delete(c echo.Context) error {
 	if err := c.Validate(req); err != nil {
 		log.Printf("error:%s", err.Error())
 		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	// 認証情報を確認
+	if leagueID, ok := c.Get("leagueID").(string); ok {
+		req.ID = leagueID
+	} else {
+		return c.JSON(http.StatusBadRequest, "Invalid token")
 	}
 
 	gameReq := types.ReqGetGameList{
@@ -124,7 +146,7 @@ func (lc *leagueController) Delete(c echo.Context) error {
 	}
 
 	for _, v := range gameList {
-		deleteReq := types.ReqGetDeleteGame{
+		deleteReq := types.ReqDeleteGame{
 			ID:       v.ID,
 			LeagueID: req.ID,
 		}
