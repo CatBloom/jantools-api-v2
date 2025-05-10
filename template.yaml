@@ -11,6 +11,9 @@ Parameters:
   ENV:
     Type: String
     Default: 'dev'
+  JWT_SECRET:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /dev/jantools-v2-api/jwt-secret
 
 Resources:
   JantoolsAPIGateway:
@@ -29,6 +32,7 @@ Resources:
       Environment:
         Variables:
           ENV: !Ref ENV
+          JWT_SECRET: !Ref JWT_SECRET
       Events:
         ApiGwEndPointRoot:
           Type: Api

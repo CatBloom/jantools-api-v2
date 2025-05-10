@@ -6,7 +6,7 @@ s3_prefix = "dev-jantools-api-v2"
 region = "ap-northeast-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "ENV=\"dev\""
+parameter_overrides = "ENV=\"dev\" JWT_SECRET=\"/dev/jantools-v2-api/jwt-secret\""
 image_repositories = ["Jantools=767397921354.dkr.ecr.ap-northeast-1.amazonaws.com/jantools-api-v2-repo"]
 
 [prod.deploy.parameters]
@@ -16,5 +16,5 @@ s3_prefix = "prod-jantools-api-v2"
 region = "ap-northeast-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "ENV=\"prod\""
+parameter_overrides = "ENV=\"prod\" JWT_SECRET=\"/prod/jantools-v2-api/jwt-secret\""
 image_repositories = ["Jantools=767397921354.dkr.ecr.ap-northeast-1.amazonaws.com/jantools-api-v2-repo"]
