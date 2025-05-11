@@ -6,20 +6,25 @@ type ReqGetGameList struct {
 	LeagueID string `query:"leagueID" validate:"required"`
 }
 
-type ReqGetDeleteGame struct {
+type ReqGetGame struct {
 	ID       string `query:"id" validate:"required"`
 	LeagueID string `query:"leagueID" validate:"required"`
 }
 
 type ReqPostGame struct {
-	LeagueID string   `json:"leagueID" validate:"required" dynamodbav:"league_id"`
+	LeagueID string   `json:"leagueID" dynamodbav:"league_id"`
 	Results  []Result `json:"results" validate:"dive,required" dynamodbav:"results" `
 }
 
 type ReqPutGame struct {
 	ID       string   `json:"id" validate:"required" dynamodbav:"id"`
-	LeagueID string   `json:"leagueID" validate:"required" dynamodbav:"league_id"`
+	LeagueID string   `json:"leagueID" dynamodbav:"league_id"`
 	Results  []Result `json:"results" validate:"dive,required" dynamodbav:"results" `
+}
+
+type ReqDeleteGame struct {
+	ID       string `query:"id" validate:"required"`
+	LeagueID string `query:"leagueID"`
 }
 
 type Game struct {

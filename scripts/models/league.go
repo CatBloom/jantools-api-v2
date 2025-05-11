@@ -15,10 +15,10 @@ import (
 )
 
 type LeagueModel interface {
-	GetLeague(types.ReqGetDeleteLeague) (types.League, error)
+	GetLeague(types.ReqGetLeague) (types.League, error)
 	CreateLeague(types.ReqPostLeague) (string, error)
 	UpdateLeague(req types.ReqPutLeague) (types.League, error)
-	DeleteLeague(req types.ReqGetDeleteLeague) (string, error)
+	DeleteLeague(req types.ReqDeleteLeague) (string, error)
 }
 
 type leagueModel struct {
@@ -29,7 +29,7 @@ func NewLeagueModel(db dynamo.DynamoDB) LeagueModel {
 	return &leagueModel{db}
 }
 
-func (lm *leagueModel) GetLeague(req types.ReqGetDeleteLeague) (types.League, error) {
+func (lm *leagueModel) GetLeague(req types.ReqGetLeague) (types.League, error) {
 	res := types.League{}
 	svg := lm.db.GetClient()
 
@@ -137,7 +137,7 @@ func (lm *leagueModel) UpdateLeague(req types.ReqPutLeague) (types.League, error
 	return res, err
 }
 
-func (lm *leagueModel) DeleteLeague(req types.ReqGetDeleteLeague) (string, error) {
+func (lm *leagueModel) DeleteLeague(req types.ReqDeleteLeague) (string, error) {
 	svg := lm.db.GetClient()
 
 	tableName := os.Getenv("ENV") + "_league"
