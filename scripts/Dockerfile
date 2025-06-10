@@ -1,4 +1,4 @@
-FROM golang:1.23.1 AS prod
+FROM golang:1.24 AS prod
 
 WORKDIR /app
 COPY go.mod go.sum ./
@@ -17,7 +17,7 @@ RUN go fmt && go build -o app .
 
 CMD ["go", "run", "/app/main.go"]
 
-FROM golang:1.23.1 AS local
+FROM golang:1.24 AS local
 
 WORKDIR /app
 RUN go mod init jantoolsAPIv2

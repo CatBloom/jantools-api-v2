@@ -12,14 +12,16 @@ type ReqGetGame struct {
 }
 
 type ReqPostGame struct {
-	LeagueID string   `json:"leagueID" dynamodbav:"league_id"`
-	Results  []Result `json:"results" validate:"dive,required" dynamodbav:"results" `
+	LeagueID string    `json:"leagueID" dynamodbav:"league_id"`
+	GameDate time.Time `json:"gameDate" validate:"required" dynamodbav:"game_date"`
+	Results  []Result  `json:"results" validate:"dive,required" dynamodbav:"results" `
 }
 
 type ReqPutGame struct {
-	ID       string   `json:"id" validate:"required" dynamodbav:"id"`
-	LeagueID string   `json:"leagueID" dynamodbav:"league_id"`
-	Results  []Result `json:"results" validate:"dive,required" dynamodbav:"results" `
+	ID       string    `json:"id" validate:"required" dynamodbav:"id"`
+	LeagueID string    `json:"leagueID" dynamodbav:"league_id"`
+	GameDate time.Time `json:"gameDate" validate:"required" dynamodbav:"game_date"`
+	Results  []Result  `json:"results" validate:"dive,required" dynamodbav:"results" `
 }
 
 type ReqDeleteGame struct {
@@ -32,7 +34,8 @@ type Game struct {
 	LeagueID  string    `json:"leagueID" dynamodbav:"league_id"`
 	CreatedAt time.Time `json:"createdAt" dynamodbav:"created_at"`
 	UpdatedAt time.Time `json:"updatedAt" dynamodbav:"updated_at"`
-	Results   []Result  `json:"results"  dynamodbav:"results" `
+	GameDate  time.Time `json:"gameDate" dynamodbav:"game_date"`
+	Results   []Result  `json:"results" dynamodbav:"results" `
 }
 
 type Result struct {
