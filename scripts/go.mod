@@ -1,8 +1,6 @@
 module main
 
-go 1.23.0
-
-toolchain go1.23.1
+go 1.24.0
 
 require (
 	github.com/aws/aws-lambda-go v1.41.0

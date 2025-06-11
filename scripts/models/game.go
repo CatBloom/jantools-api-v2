@@ -137,7 +137,10 @@ func (gm *gameModel) UpdateGame(req types.ReqPutGame) (types.Game, error) {
 	if err != nil {
 		return res, err
 	}
-
+	gameDate, err := attributevalue.Marshal(req.GameDate)
+	if err != nil {
+		return res, err
+	}
 	resultList, err := attributevalue.MarshalList(req.Results)
 	if err != nil {
 		return res, err
@@ -153,12 +156,14 @@ func (gm *gameModel) UpdateGame(req types.ReqPutGame) (types.Game, error) {
 		ExpressionAttributeNames: map[string]string{
 			"#results":    "results",
 			"#updated_at": "updated_at",
+			"#game_date":  "game_date",
 		},
 		ExpressionAttributeValues: map[string]dynamoTypes.AttributeValue{
 			":results":    &dynamoTypes.AttributeValueMemberL{Value: resultList},
 			":updated_at": updatedAt,
+			":game_date":  gameDate,
 		},
-		UpdateExpression: aws.String("SET #results = :results,#updated_at = :updated_at"),
+		UpdateExpression: aws.String("SET #results = :results,#updated_at = :updated_at,#game_date = :game_date"),
 		ReturnValues:     dynamoTypes.ReturnValueAllNew,
 	}
 
